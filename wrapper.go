@@ -10,8 +10,8 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-// WrapHandler wraps a standard http.HandlerFunc to work with AWS Lambda Function URL.
-func WrapHandler(handler http.HandlerFunc) func(ctx context.Context, request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+// WrapHandler wraps an http.Handler to work with AWS Lambda Function URL.
+func WrapHandler(handler http.Handler) func(ctx context.Context, request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
 	return func(ctx context.Context, request events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
 		// Convert LambdaFunctionURLRequest to http.Request
 		httpRequest, err := convertLambdaRequestToHTTPRequest(request)
@@ -22,8 +22,8 @@ func WrapHandler(handler http.HandlerFunc) func(ctx context.Context, request eve
 		// Create a response recorder to capture the response
 		responseRecorder := NewResponseRecorder()
 
-		// Call the standard HTTP handler
-		handler(responseRecorder, httpRequest)
+		// Call the http.Handler's ServeHTTP method
+		handler.ServeHTTP(responseRecorder, httpRequest)
 
 		// Convert the recorded response to LambdaFunctionURLResponse
 		lambdaResponse := convertHTTPResponseToLambdaResponse(responseRecorder)
